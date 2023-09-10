@@ -1,0 +1,42 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+  transform:
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["application"], resource.attributes["application"])
+          - set(attributes["cluster"], resource.attributes["cluster"])
+          - set(attributes["service_name"], resource.attributes["service.name"])
+
+exporters:
+  otlp:
+    endpoint: http://tempo:4317
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      demo: otelcol
+    send_timestamps: false
+    metric_expiration: 5m
+    enable_open_metrics: true
+    add_metric_suffixes: true
+    resource_to_telemetry_conversion:
+      enabled: false
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [transform,batch]
+      exporters: [prometheus]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]

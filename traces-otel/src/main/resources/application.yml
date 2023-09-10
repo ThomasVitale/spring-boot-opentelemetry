@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: traces-otel
+
+server:
+  port: 8181
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-components: always
+      show-details: always
+
+  # Generic OpenTelemetry configuration (partially shared between metrics and traces)
+  opentelemetry:
+    resource-attributes:
+      application: ${spring.application.name}
+      cluster: local
+      # Micrometer Metrics configures this attribute with "unknown value".
+      # It should probably be autoconfigured correctly by Spring Boot.
+      "service.name": ${spring.application.name}
+
+  # Traces-specific OpenTelemetry configuration
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces

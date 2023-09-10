@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Applications'
+    folder: 'Applications'
+    options:
+      path: /etc/grafana/provisioning/dashboards/applications
+  - name: 'Platform'
+    folder: 'Platform'
+    options:
+      path: /etc/grafana/provisioning/dashboards/platform
