@@ -42,60 +42,6 @@ management:
 
 I made a demo application to showcase this setup.
 
-### Issue M.1 - Wrong autoconfiguration in Spring Boot 3.2
-
-In this [pull request](https://github.com/spring-projects/spring-boot/commit/b0615dd311ae89de5108149f4baacf7b25b1f0fe) delivered to spring Boot 3.2.0,
-some OpenTelemetry configuration regarding resource attributes has been consolidated to be able to share it between metrics and traces implementations
-(which is really great and useful, thanks for that!).
-
-That works fine when using OpenTelemetry for tracing, but when it's used only for metrics the autoconfiguration doesn't work. The `OpenTelemetryProperties`
-bean which is now autowired in the `OtlpMetricsExportAutoConfiguration` requires the OpenTelemetry SDK to be in the classpath. However, the Micrometer Registry OTLP
-library doesn't include the OpenTelemetry SDK, causing the autoconfiguration to fail.
-
-A workaround for now is to add an explicit dependency to OpenTelemetry SDK and rely on the Spring Boot dependency management to resolve the correct version.
-
-```groovy
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    runtimeOnly 'io.micrometer:micrometer-registry-otlp'
-    
-    // Added dependency
-    implementation 'io.opentelemetry:opentelemetry-sdk-common'
-}
-```
-
-Possible solutions:
-
-* include workaround to the Spring Boot Actuator documentation;
-* add missing dependency as part of the autoconfiguration;
-* wait until further consolidation activities have been completed to unify the OpenTelemetry support in Spring.
-
-### Issue M.2 - Service Name resource attribute is set to "unknown_service"
-
-By default, Micrometer Registry OTLP includes a few resource attributes to the exported metrics (see the [full list](https://micrometer.io/docs/registry/otlp)).
-One of them is the standard `service.name` OpenTelemetry attribute. The default value for this attribute is `unknown_service` since the library can't know
-the name of the application being instrumented.
-
-Relying on the Spring Boot Actuator autoconfiguration for OpenTelemetry resource attributes, developers can overwrite the value of `service.name`
-with the actual name of the application as configured in Spring Boot (`spring.application.name`).
-
-```yaml
-management:
-  opentelemetry:
-    resource-attributes:
-      "service.name": ${spring.application.name}
-```
-
-Since Spring Boot can tell if an application name has been configured, it would be nice if some autoconfiguration existed to do that out-of-the-box.
-Such autoconfiguration already exists in Spring Boot Actuator (see [OpenTelemetryAutoConfiguration](https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-actuator-autoconfigure/src/main/java/org/springframework/boot/actuate/autoconfigure/opentelemetry/OpenTelemetryAutoConfiguration.java#L71)).
-However, that is only actually used for traces.
-
-Possible solutions:
-
-* leave it to the developers to assign a proper value to the `service.name` resource attribute;
-* add dedicated autoconfiguration only for metrics when using OpenTelemetry;
-* wait until further consolidation activities have been completed to unify the OpenTelemetry support in Spring.
-
 ### Issue M.3 - OTLP Metrics Exporter is HTTP-only and not configurable via OpenTelemetry
 
 The Micrometer Registry OTLP module uses an OTLP-compatible HTTP client to export metrics to an OpenTelemetry backend.
@@ -124,9 +70,6 @@ Possible solutions:
 I have submitted an issue to the Micrometer project and shared these suggestions. Building (or updating) such a module would make it possible
 to re-use the same `OpenTelemetryAutoConfiguration` introduced in Spring Boot 3.2 for both metrics and traces (and, in the future, for logs as well).
 
-* It would solve the issue M.1 described before since the Micrometer Registry module would have a dependency on the OpenTelemetry SDK.
-* It would solve the issue M.2 described before because Micrometer would use the autoconfigured `Resource` object from OpenTelemetry to add resource attributes
-  to the metrics.
 * An [issue](https://github.com/spring-projects/spring-boot/issues/36546) already exists on the Spring Boot project to autoconfigure an `SdkMeterProvider`
   bean and, in general, for using metrics with OpenTelemetry. But we are missing Micrometer support before that is doable.
 * It would also make it possible to switch the client implementation between HTTP and gRPC using the standard OpenTelemetry approach (i.e. configuring either an
@@ -184,11 +127,6 @@ There is already an [issue](https://github.com/spring-projects/spring-boot/issue
 ## Summary
 
 Overall, these are the issues and suggestions I've been describing so far.
-
-### Current bugs in Spring Boot 3.2
-
-* The Micrometer Registry OTLP library doesn't depend on the OpenTelemetry SDK. However, the autoconfiguration in Spring Boot Actuator does. That breaks the application if OpenTelemetry is only used for metrics.
-* The OpenTelemetry autoconfiguration provided by Spring Boot Actuator for resource attributes is not used for the metrics, resulting in the standard `service.name` to be set to `unkown_service` rather than to the value of `spring.application.name`.
 
 ### Minimal proposed changes to consolidate OpenTelemetry support in Spring for metrics and traces
 

@@ -17,14 +17,10 @@ management:
     resource-attributes:
       application: ${spring.application.name}
       cluster: local
-      # Micrometer Metrics configures this attribute with "unknown value".
-      # It should probably be autoconfigured correctly by Spring Boot.
-      "service.name": ${spring.application.name}
 
   # Metrics-specific OpenTelemetry configuration
   otlp:
     metrics:
       export:
-        # Only HTTP is supported
         url: http://localhost:4318/v1/metrics
         step: 5s

@@ -19,3 +19,9 @@ You can call the application as follows.
 ```shell
 http :8181/greeting
 ```
+
+Alternatively, you can run the application together with the Grafana stack thanks to Testcontainers.
+
+```shell
+./gradlew bootTestRun
+```

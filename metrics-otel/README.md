@@ -1,6 +1,6 @@
 # Sample with OpenTelemetry metrics
 
-First, ensure the observabiltiy stack is up and running. From the root directory, runs the following command.
+First, ensure the observability stack is up and running. From the root directory, runs the following command.
 
 ```shell
 docker compose up -d
@@ -18,4 +18,10 @@ You can call the application as follows.
 
 ```shell
 http :8080/greeting
+```
+
+Alternatively, you can run the application together with the Grafana stack thanks to Testcontainers.
+
+```shell
+./gradlew bootTestRun
 ```
