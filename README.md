@@ -42,7 +42,7 @@ management:
 
 I made a demo application to showcase this setup.
 
-### Issue M.3 - OTLP Metrics Exporter is HTTP-only and not configurable via OpenTelemetry
+### Issue: OTLP Metrics Exporter is not configurable via OpenTelemetry
 
 The Micrometer Registry OTLP module uses an OTLP-compatible HTTP client to export metrics to an OpenTelemetry backend.
 Internally, the `OtlpMeterRegistry` uses a private `HttpSender` object to configure the HTTP client. The benefit of this
@@ -52,8 +52,8 @@ approach is that the module is lightweight and doesn't need any dependency on th
 On the other hand, such an approach means that:
 
 * it's not possible to configure the metrics exporter via standard OpenTelemetry configuration;
-* it's not possible to use gRPC instead of HTTP/protobuf;
-* it's not possible to share OpenTelemetry configuration in Spring Boot between metrics and traces (see, for example, issue M.2).
+* it's not possible to configure compression;
+* it's not possible to share OpenTelemetry configuration in Spring Boot between metrics and traces.
 
 The new generic `OpenTelemetryAutoConfiguration` in Spring Boot 3.2 autoconfigures an `OpenTelemetry` bean and makes it possible
 to configure an `SdkMeterProvider` bean. What if Micrometer could use that for setting up the OpenTelemetry metrics exporter?
@@ -116,7 +116,7 @@ management:
 
 I made a demo application to showcase this setup.
 
-### Issue T1 - Exporting traces via gRPC
+### Issue Exporting traces via gRPC
 
 In this [issue](https://github.com/spring-projects/spring-boot/issues/35596) on the Spring Boot project, autoconfiguration for an `OtlpHttpSpanExporter` bean has been added to export traces via HTTP.
 
