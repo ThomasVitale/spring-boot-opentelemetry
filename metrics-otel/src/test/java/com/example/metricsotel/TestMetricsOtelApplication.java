@@ -15,13 +15,12 @@ public class TestMetricsOtelApplication {
     @Bean
     @ServiceConnection("otel/opentelemetry-collector-contrib")
     GenericContainer<?> lgtmContainer() {
-        GenericContainer<?> lgtm = new GenericContainer<>("ghcr.io/thomasvitale/otel-lgtm")
+        return new GenericContainer<>("docker.io/grafana/otel-lgtm:0.6.0")
                 .withExposedPorts(3000, 4317, 4318)
                 .withEnv("OTEL_METRIC_EXPORT_INTERVAL", "500")
                 .waitingFor(Wait.forLogMessage(".*The OpenTelemetry collector and the Grafana LGTM stack are up and running.*\\s", 1))
                 .withStartupTimeout(Duration.ofMinutes(2))
                 .withReuse(true);
-        return lgtm;
     }
 
     public static void main(String[] args) {
